@@ -172,7 +172,7 @@ def shifts(w, num):
         b = getrandbits(32)
         arith = True if getrandbits(1) == 1 else False
         d = g(b, int(decimal_to_twos(a, 5), 2), arith)
-        opcode = '0000011' if arith else '0000010'
+        opcode = '0000111' if arith else '0000110'
         write(w, a, b, 0, 0, opcode, 0, d, 1)
 
 def subtract_tests(w, num):
@@ -214,8 +214,11 @@ def compare(w, num):
         w.writerows([(decimal_to_twos(a, 32), decimal_to_twos(b, 32), '1111', '00000', ext(twos_to_decimal(format(a, '032b')) <= 0), 0)])
         w.writerows([(decimal_to_twos(a, 32), decimal_to_twos(b, 32), '1101', '00000', ext(twos_to_decimal(format(a, '032b')) > 0), 0)])
 
+count = 0
 def write(w, a32, b32, rd5, shamt5, fcn7, imm32, d32, we):
     w.writerows([(a32, b32, rd5, shamt5, fcn7, imm32, d32, 0, rd5, we)])
+    global count
+    count += 1
 
 def main():
     filename = 'execute_tests.txt'
@@ -226,18 +229,15 @@ def main():
     # header
     writer.writerows([('A[32]', 'B[32]', 'rd[5]', 'shamt[5]', 'fcn[7]', 'imm[32]', 'D[32]', 'Bfwd[32]', 'rdo[5]', 'we')])
 
-    # immediate_arithmetic(writer, 40)
-    # register_arithmetic(writer, 40)
-    # move(writer, 40)
-    shifts(writer, 40)
-
-    # adder_tests(writer, 200)
-    # rightshift_tests(writer, 100)
-    # subtract_tests(writer, 200)
-    # logic_tests(writer, 50)
-    # compare(writer, 50)
+    immediate_arithmetic(writer, 100)
+    register_arithmetic(writer, 100)
+    move(writer, 100)
+    shifts(writer, 100)
 
     f.close()
+
+    global count
+    print("Wrote {} tests to {}".format(count, filename))
 
 if __name__ == '__main__':
     main()
