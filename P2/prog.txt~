@@ -1,0 +1,15 @@
+ANDI  $2, $2, 0x0 # clear reg 2
+ANDI  $3, $3, 0x0 # clear reg 3
+ANDI  $4, $4, 0x0 # clear reg 4
+ANDI  $5, $5, 0x0 # clear reg 5
+ANDI  $6, $6, 0x0 # clear reg 6
+ANDI  $7, $7, 0x0 # clear reg 7
+ADDIU $2, $0, 0x20
+NOP
+NOP
+SLTI  $5, $2, 0x22 # 0x1
+SLTI  $6, $2, 0x19 # 0x0
+ORI   $3, $2, 0xf0
+XORI  $4, $2, 0xff
+MOVN  $7, $2, $5 # r7 = 0x20
+MOVN  $8, $2, $6 # r8 = 0x0
