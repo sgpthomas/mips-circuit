@@ -175,50 +175,37 @@ def shifts(w, num):
         opcode = '0000111' if arith else '0000110'
         write(w, a, b, 0, 0, opcode, 0, d, 1)
 
-def subtract_tests(w, num):
-    for i in range(num):
-        a = twos_to_decimal(format(getrandbits(32), '032b'))
-        b = twos_to_decimal(format(getrandbits(32), '032b'))
-
-        (s, v) = sub_twos(a, b, 32)
-        w.writerows([(decimal_to_twos(a, 32), decimal_to_twos(b, 32), '0110', '00000', decimal_to_twos(s, 32), v)])
-
-def logic_tests(w, num):
-    def flip(n):
-        s = ''
-        for c in n:
-            s += '0' if c == '1' else '1'
-        return s
-
-    for i in range(num):
-        a = getrandbits(32)
-        b = getrandbits(32)
-        c_or = a | b
-        c_and = a & b
-        c_xor = a ^ b
-        c_nor = flip(decimal_to_twos(a | b, 32))
-        w.writerows([(decimal_to_twos(a, 32), decimal_to_twos(b, 32), '1010', '00000', decimal_to_twos(c_or, 32), 0)])
-        w.writerows([(decimal_to_twos(a, 32), decimal_to_twos(b, 32), '1000', '00000', decimal_to_twos(c_and, 32), 0)])
-        w.writerows([(decimal_to_twos(a, 32), decimal_to_twos(b, 32), '1100', '00000', decimal_to_twos(c_xor, 32), 0)])
-        w.writerows([(decimal_to_twos(a, 32), decimal_to_twos(b, 32), '1110', '00000', c_nor, 0)])
-
-def compare(w, num):
-    def ext(b):
-        return '0'*31 + ('1' if b else '0')
-
-    for i in range(num):
-        a = getrandbits(32)
-        b = getrandbits(32)
-        w.writerows([(decimal_to_twos(a, 32), decimal_to_twos(b, 32), '1011', '00000', ext(a != b), 0)])
-        w.writerows([(decimal_to_twos(a, 32), decimal_to_twos(b, 32), '1001', '00000', ext(a == b), 0)])
-        w.writerows([(decimal_to_twos(a, 32), decimal_to_twos(b, 32), '1111', '00000', ext(twos_to_decimal(format(a, '032b')) <= 0), 0)])
-        w.writerows([(decimal_to_twos(a, 32), decimal_to_twos(b, 32), '1101', '00000', ext(twos_to_decimal(format(a, '032b')) > 0), 0)])
-
 count = 0
 def write(w, a32, b32, rd5, shamt5, fcn7, imm32, d32, we):
-    w.writerows([(a32, b32, rd5, shamt5, fcn7, imm32, d32, 0, rd5, we)])
+    w.writerows([(a32, b32, rd5, shamt5, decode_fcn(fcn7), imm32, d32, 0, rd5, we)])
     global count
     count += 1
+
+def decode_fcn(bstr):
+    arr = []
+    for ch in bstr:
+        arr.insert(0, int(ch))
+    # 1st level
+    a = arr[3] & (not arr[5])
+    b = (not arr[5]) & (not arr[6]) & arr[0]
+    c = arr[1] & (not arr[2]) & arr[3]
+    d = arr[0] & arr[1] & arr[2] & arr[3]
+    e = (not arr[6]) & (not arr[5]) & arr[2]
+    # 2nd level
+    f = b ^ arr[0]
+    g = c & (not arr[5]) & (not arr[6])
+    h = a & (not g)
+    # opcode
+    opcode = []
+    if e == 1:
+        opcode = [b, arr[3], arr[1], arr[3]]
+    else:
+        opcode = [b, f, arr[1], arr[2]]
+    res = [opcode[0], opcode[1], opcode[2], opcode[3], h, c, d, g, e, arr[0]]
+    s = ''
+    for ch in res:
+        s = str(ch) + s
+    return s
 
 def main():
     filename = 'execute_tests.txt'
@@ -227,7 +214,7 @@ def main():
     writer = csv.writer(f, delimiter = '\t')
 
     # header
-    writer.writerows([('A[32]', 'B[32]', 'rd[5]', 'shamt[5]', 'fcn[7]', 'imm[32]', 'D[32]', 'Bfwd[32]', 'rdo[5]', 'we')])
+    writer.writerows([('A[32]', 'B[32]', 'rd[5]', 'shamt[5]', 'fcn[10]', 'imm[32]', 'D[32]', 'Bfwd[32]', 'rdo[5]', 'we')])
 
     immediate_arithmetic(writer, 100)
     register_arithmetic(writer, 100)
