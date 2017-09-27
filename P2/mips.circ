@@ -185,10 +185,10 @@ end TCL_Generic;
     <wire from="(770,530)" to="(770,540)"/>
     <wire from="(380,50)" to="(630,50)"/>
     <wire from="(1020,480)" to="(1020,620)"/>
+    <wire from="(90,50)" to="(90,310)"/>
     <wire from="(590,510)" to="(640,510)"/>
     <wire from="(600,490)" to="(640,490)"/>
     <wire from="(770,450)" to="(770,480)"/>
-    <wire from="(90,50)" to="(90,70)"/>
     <wire from="(760,280)" to="(860,280)"/>
     <wire from="(650,520)" to="(650,600)"/>
     <wire from="(820,480)" to="(820,630)"/>
@@ -246,8 +246,8 @@ end TCL_Generic;
     <wire from="(730,230)" to="(820,230)"/>
     <wire from="(730,190)" to="(820,190)"/>
     <wire from="(870,500)" to="(900,500)"/>
-    <wire from="(90,70)" to="(90,310)"/>
     <wire from="(200,290)" to="(210,290)"/>
+    <wire from="(80,50)" to="(90,50)"/>
     <wire from="(510,20)" to="(640,20)"/>
     <wire from="(980,210)" to="(980,390)"/>
     <wire from="(890,460)" to="(900,460)"/>
@@ -318,7 +318,6 @@ end TCL_Generic;
     <wire from="(390,180)" to="(400,180)"/>
     <wire from="(600,430)" to="(600,490)"/>
     <wire from="(770,560)" to="(770,620)"/>
-    <wire from="(80,70)" to="(90,70)"/>
     <wire from="(430,200)" to="(430,390)"/>
     <wire from="(1040,170)" to="(1040,350)"/>
     <wire from="(840,320)" to="(840,560)"/>
@@ -333,7 +332,6 @@ end TCL_Generic;
       <a name="text" val="id/ex"/>
       <a name="font" val="SansSerif plain 12"/>
     </comp>
-    <comp lib="0" loc="(80,70)" name="Constant"/>
     <comp lib="10" loc="(370,140)" name="MIPSProgramROM">
       <a name="contents"># not yet implemented instructions
 J       0xdead00
