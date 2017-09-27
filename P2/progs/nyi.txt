@@ -1,0 +1,18 @@
+# not yet implemented instructions
+J       0xdead00
+JAL     0xcafe00
+JR      $1
+JALR    $1, $2
+BEQ     $1, $2, 0xbea0
+BNE     $2, $1, 0xbee0
+BLEZ    $1, 0xdee0
+BGTZ    $2, 0xdee0
+BLTZ    $1, 0xbee0
+BGEZ    $2, 0xfee0
+LW      $4, 4($1)
+LB      $5, 5($2)
+LBU     $3, 3($3)
+SW      $6, 6($6)
+SB      $7, 8($9)
+
+# no changes to registers

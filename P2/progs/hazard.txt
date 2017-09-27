@@ -1,0 +1,10 @@
+ADDIU   $1, $0, 0x0fc1
+XORI    $2, $1, 0xff # ex hazard
+NOP
+ADDU    $3, $2, $2 # mem hazard
+NOR     $3, $3, $1 # ex hazard
+ORI     $3, $3, 0x1c # both, choose ex
+
+# r1 = 0x00000fc1
+# r2 = 0x00000f3e
+# r3 = 0xffffe01e

@@ -1,0 +1,179 @@
+#The following includes many test cases for the MIPS Program ROM of the Mini-MIPS Processor. Each instruction has a unique destination register, so the expected values for the register written to for each instruction is commented next to the instruction. 
+
+#addiu tests
+addiu $1, $0, 3248 #0x00000cb0
+addiu $2, $0, 803  #0x00000323
+
+#The following instructions are not yet supported by this Mini-MIPS32 processor. Thus, they should not change any values of registers or jump to any new PC address. The remaining instructions should proceed as normal.
+# BEQ $1, $1, -20
+# BEQ $1, $1, 4
+
+# BNE $1, $1, 28304
+# BNE $2, $1, -10032
+
+# BLEZ $1, 8028
+# BLEZ $3, -280
+# BLEZ $0, 20364
+
+# BGTZ $1, 39488
+# BGTZ $3, 80
+# BGTZ $0, 8232
+
+# BLTZ $1, -2392
+# BLTZ $3, 23928
+# BLTZ $0, 1804
+
+# BGEZ $1, 9204
+# BGEZ $3, 20
+# BGEZ $0, -3812
+
+# J 1897340
+# J 2904
+# JR $2
+# JR $3
+# JAL 8232
+# JAL 22020
+# JALR $2
+# JALR $3
+
+# SW $1, 2012($1)
+# SB $2, 10324($1)
+# LW $2, 4804($1)
+# LB $3, -2392($3)
+# LBU $1, 280($1)
+#end of unsupported instructions, the following should proceed normally.
+
+subu $3, $2, $1 #0xfffff673
+addu $4, $1, $3 #0x00000323
+
+#andi tests
+andi $5, $2, 779 #0x00000303
+
+#ori tests
+ori $6, $1, 3490 #0x00000db2
+
+#xori tests
+xori $7, $1, 20239 #0x000043bf
+
+#slti
+slti $8, $1, -3292 #0x00000000
+slti $9, $1, 32500 #0x00000001
+
+#sltiu
+sltiu $10, $1, 20   #0x00000000
+sltiu $11, $1, 4309 #0x00000001
+
+#and
+and $12, $1, $2 #0x00000020
+
+#or
+or $13, $1, $2 #00000fb3
+
+#xor
+xor $14, $1, $3 #0xfffff04c
+
+#nor
+nor $15, $1, $2 #0xfffff04c
+
+#slt
+slt $16, $1, $17 #0x00000000
+slt $17, $3, $1 #0x00000001
+
+#sltu
+sltu $18, $1, $2 #0x00000000
+sltu $19, $2, $1 #0x00000001
+
+#movn
+movn $20, $1, $2 #0x00000cb0
+movn $21, $1, $0 #0x00000000
+
+#movz
+movz $22, $2, $2 #0x00000000
+movz $23, $2, $0 #0x00000323
+
+#sll
+sll $24, $1, 23 #58000000
+
+#srl
+srl $25, $2, 5 #0x00000019
+srl $26, $3, 9 #0x007ffffb
+
+#sra
+sra $27, $2, 13 #0x00000000
+
+#sllv
+sllv $28, $1, $2 #0x00006580
+
+#srlv
+srlv $29, $3, $1 #0x0000ffff
+
+#srav
+srav $30, $3, $2 #0xfffffece
+
+#lui
+lui $31, 2803 #0x0af30000
+
+#The following instructions test possible hazards that require forwarding logic, both individually as well as combinations of errors. Nops separate the instructions in each set to isolate the dependencies:
+
+#1a. EX/MEM.RegisterRd == ID/EX.RegisterRs
+addiu $1, $1, 30
+addu $2, $1, $2
+sll $0, $0, 0 #nops 
+sll $0, $0, 0
+sll $0, $0, 0
+
+#1b. EX/MEM.RegisterRD == ID/EX.RegisterRt GOOD
+addiu $1, $1, 239
+addu $2, $2, $1
+sll $0, $0, 0 #nops 
+sll $0, $0, 0
+sll $0, $0, 0
+
+#2a. MEM/WB.RegisterRd == ID/EX.RegisterRs GOOD
+addiu $1, $1, 2304
+addiu $3, $3, 489 #no dependency
+addu $2, $1, $2 
+sll $0, $0, 0 #nops 
+sll $0, $0, 0
+sll $0, $0, 0
+
+#2b. MEM/WB.RegisterRd == ID/EX.RegisterRt GOOD
+addiu $1, $1, -384
+addiu $3, $3, 29 #no dependency
+addu $2, $2, $1 
+sll $0, $0, 0 #nops 
+sll $0, $0, 0
+sll $0, $0, 0
+
+#3a. EX/MEM.RegisterRd == ID/EX.RegisterRs AND 
+#    MEM/WB.RegisterRD == ID/EX.RegisterRt     GOOD
+addiu $1, $1, 120
+addiu $2, $2, -57
+addu $3, $1, $2
+sll $0, $0, 0 #nops 
+sll $0, $0, 0
+sll $0, $0, 0
+
+#3b. EX/MEM.RegisterRd == ID/EX.RegisterRt AND
+#    MEM/WB.RegisterRD == ID/EX.RegisterRs     GOOD
+addiu $1, $1, -239
+addiu $2, $2, 6993
+addu $3, $2, $1
+sll $0, $0, 0 #nops 
+sll $0, $0, 0
+sll $0, $0, 0
+
+#4. EX/MEM.RegisterRd == ID/EX.RegisterRs (insn 2)
+#   MEM/WB.RegisterRd == ID/EX.RegisterRs (insn 3)    GOOD
+addiu $1, $1, 93
+subu $1, $1, $2
+addu $1, $1, $3
+sll $0, $0, 0 #nops 
+sll $0, $0, 0
+sll $0, $0, 0
+
+#5. EX/MEM.RegisterRd == ID/EX.RegisterRs (insn 2)
+#   EX/MEM.RegisterRd == ID/EX.RegisterRs (insn 3)   FAIL!!!!
+addiu $1, $1, 453
+addu $2, $1, $2 #dep on $1 in EX 
+addiu $1, $1, 135 #dep on $1 in WB

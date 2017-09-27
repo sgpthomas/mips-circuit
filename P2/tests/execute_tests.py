@@ -175,9 +175,19 @@ def shifts(w, num):
         opcode = '0000111' if arith else '0000110'
         write(w, a, b, 0, 0, opcode, 0, d, 1)
 
+def jump(w):
+    codes = ['1000010', '1000011', '0001000', '0001001', '1000100', '1000101', '1000110', '1000111', '1000001']
+    for ctrl in codes:
+        write(w, 0, 0, 0, 0, ctrl, 0, 'x'*32, 0)
+
+def mem(w):
+    codes = ['1100011', '1100000', '1100100', '1101011', '1101000']
+    for ctrl in codes:
+        write(w, 0, 0, 0, 0, ctrl, 0, 'x'*32, 0)
+
 count = 0
-def write(w, a32, b32, rd5, shamt5, fcn7, imm32, d32, we):
-    w.writerows([(a32, b32, rd5, shamt5, decode_fcn(fcn7), imm32, d32, 0, rd5, we)])
+def write(w, a32, b32, rd5, shamt5, fcn12, imm32, d32, we):
+    w.writerows([(a32, b32, rd5, shamt5, decode_fcn(fcn12), imm32, d32, 0, rd5, we)])
     global count
     count += 1
 
@@ -191,17 +201,25 @@ def decode_fcn(bstr):
     c = arr[1] & (not arr[2]) & arr[3]
     d = arr[0] & arr[1] & arr[2] & arr[3]
     e = (not arr[6]) & (not arr[5]) & arr[2]
+    z = (not arr[3]) & (not arr[5]) & arr[6]
+    y = (not arr[1]) & arr[3] & (not arr[5]) & (not arr[6])
+    x = arr[5] & arr[6]
     # 2nd level
     f = b ^ arr[0]
     g = c & (not arr[5]) & (not arr[6])
-    h = a & (not g)
+    w = z | y
+    u = c & (not x)
+    v = w | x
+    h = a & (not g) & (not w)
     # opcode
     opcode = []
-    if e == 1:
+    if v == 1:
+        opcode = [0, 0, 0, 0]
+    elif e == 1:
         opcode = [b, arr[3], arr[1], arr[3]]
     else:
         opcode = [b, f, arr[1], arr[2]]
-    res = [opcode[0], opcode[1], opcode[2], opcode[3], h, c, d, g, e, arr[0]]
+    res = [opcode[0], opcode[1], opcode[2], opcode[3], h, u, d, g, e, arr[0], w, x]
     s = ''
     for ch in res:
         s = str(ch) + s
@@ -214,12 +232,14 @@ def main():
     writer = csv.writer(f, delimiter = '\t')
 
     # header
-    writer.writerows([('A[32]', 'B[32]', 'rd[5]', 'shamt[5]', 'fcn[10]', 'imm[32]', 'D[32]', 'Bfwd[32]', 'rdo[5]', 'we')])
+    writer.writerows([('A[32]', 'B[32]', 'rd[5]', 'shamt[5]', 'fcn[12]', 'imm[32]', 'D[32]', 'Bfwd[32]', 'rdo[5]', 'we')])
 
     immediate_arithmetic(writer, 100)
     register_arithmetic(writer, 100)
     move(writer, 100)
     shifts(writer, 100)
+    jump(writer)
+    mem(writer)
 
     f.close()
 

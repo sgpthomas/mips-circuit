@@ -1,0 +1,15 @@
+ADDIU   $t0, $0,  0	    # init f1
+ADDIU   $t1, $0,  1	    # init f2
+ADDU    $t2, $t0, $t1	# fi = f(2)
+ADDIU   $t0, $t1, 0
+ADDIU   $t1, $t2, 0
+ADDU    $t2, $t0, $t1	# fi = f(3)
+ADDIU   $t0, $t1, 0
+ADDIU   $t1, $t2, 0
+ADDU    $t2, $t0, $t1	# fi = f(4)
+ADDIU   $v0, $t2, 0	    # return result
+
+# r2 = 0x00000003
+# r8 = 0x00000001
+# r9 = 0x00000002
+# r10= 0x00000003

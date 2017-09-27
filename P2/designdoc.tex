@@ -9,7 +9,6 @@
 % Name, netid
 \author{Samuel Thomas (sgt43) \and Elisha Sword (eds88)}
 
-
 \begin{document}
 \maketitle
 
@@ -26,6 +25,7 @@ that it takes to execute each instruction, we can reduce the clock speed and inc
 We present a 5-staged pipeline design. Instructions are fetched in the first stage. Instructions are decoded and registers are read in the second stage.
 The third stage executes an instruction. The fourth stage writes values to memory if required.
 The fifth stage writes the results of the execute stage back into the register file.
+\diagram{overview}
 
 \section{Instruction Fetch Stage}
 This stage fetches the next instruction to execute. We store all of the instructions in Program ROM and keep track of where we are in the execution with \texttt{PC}.
@@ -52,7 +52,8 @@ Test that the instructions are fetched in the correct order.
 \section{Instruction Decoding Stage}
 This is the stage where our register file lives. In the first half of the clock cycle, we write input \texttt{W} to register \texttt{rW} if \texttt{wE} is high. 
 In the second half of the clock cycle, we read registers \texttt{rA} and registers \texttt{rB} and output them as \texttt{A} and \texttt{B} respectively.
-We also split the opcode into \texttt{rd}, \texttt{shamt}, \texttt{fcn}, and \texttt{imm} so that future stages simpler. 
+We also split the opcode into \texttt{rd}, \texttt{shamt}, \texttt{fcn}, and \texttt{imm} so that future stages simpler.
+\texttt{Fcn} is determined from a \texttt{7 bit} control signal that is passed into \texttt{parser}. More on this below.
 \subsection{Circuit Diagram}
 \diagram[0.8]{decode}
 \subsubsection{Outputs}
@@ -60,13 +61,35 @@ We also split the opcode into \texttt{rd}, \texttt{shamt}, \texttt{fcn}, and \te
 \item \texttt{A} and \texttt{B} are read from the register file based on \texttt{rA} (bits 21-25) and \texttt{rB} (bits 16-20).
 \item The output \texttt{rd} is determined by \texttt{bit 3} of the opcode. When this bit is low, \texttt{rd = bits 11-15}. When this bit is high, \texttt{rd = bits 16-20}.
 \item \texttt{shamt} is always equal to \texttt{bits 6-10}.
-\item \texttt{fcn} is a 7-bit number that will be used in the execute stage to determine what operation to give to the ALU.
-  The lower 6-bits of this number from either the opcode \texttt{bits 0-5} or, if the opcode is all 0s, from \texttt{bits 26-31}.
-  The upper bit of \texttt{fcn} is 0 if the opcode is all 0s and 1 otherwise.
+\item \texttt{fcn} is a 12 bit number that will be used in the execute stage to determine what operation to give to the ALU. It is encoded as the following:
+  \begin{itemize}
+  \item \texttt{bits 0-3} are the ALU opcode.
+  \item \texttt{bit 4} chooses between B and Imm.
+  \item \texttt{bit 5} is high when we are executing a STL instruction.
+  \item \texttt{bit 6} is high when we are executing a LUI instruction.
+  \item \texttt{bit 7} is high when we are executing a MOV instruction.
+  \item \texttt{bit 8} is high when we are executing variable shift instructions.
+  \item \texttt{bit 9} is the lowest bit of the control input.
+  \item \texttt{bit 10} is high when we are executing jump instructions.
+  \item \texttt{bit 11} is high when we are executing mem instructions.
+  \end{itemize}
 \item \texttt{imm} is \texttt{bits 0-15} (either sign extended or zero extended depending on \texttt{bit 2} of the \texttt{fcn} part of the instruction),
   or \texttt{bits 6-10} zero extended. This is determined by \texttt{bit 3} of the opcode.
   The purpose of this is to have a 32-bit zero to compare against in the execute stage.
+\item \texttt{rs} is simply \texttt{bits 21-25} forwarded onto the next stage for determining hazards.
+\item \texttt{rt} is simply \texttt{bits 16-20} forwarded onto the next stage for determining hazards.
 \end{itemize}
+
+\subsection{Parser}
+\diagram{parser}
+This is where the bulk of the decoding takes place. The input is a \texttt{7 bit} control signal.
+The lower 6 bits of this signal come from either the opcode, or the funct portion of R-type instructions.
+The highest bit of this signal is 0 is the opcode of the instruction is all zeros and 1 otherwise. 
+We use this bit to differentiate between between control signals that would otherwise be identical.
+For example, \textsc{movn} and \textsc{sltiu} would otherwise have identical control signals.
+
+The circuit logic is so complicated that it is difficult to describe in words. Instead, a table of the possible inputs to corresponding outputs is in the appendix.
+We will explain what each output is used for in the Execute Stage.
 
 \subsection{Correctness Constraints}
 \begin{itemize}
@@ -74,58 +97,110 @@ We also split the opcode into \texttt{rd}, \texttt{shamt}, \texttt{fcn}, and \te
 \item \texttt{A} and \texttt{B} are correctly read from the registers based on \texttt{rA} and \texttt{rB}.
 \item \texttt{rD} is correctly chosen based on the instruction. 
 \item \texttt{shamt} is fetched correctly from the instruction.
-\item \texttt{fcn} correctly chooses between the opcode and the special function portion of the instruction.
+\item \texttt{fcn} correctly chooses between the opcode and the special function portion of the instruction and is correctly parsed.
 \item \texttt{imm} correctly outputs sign-extended lower 16-bits, zero-extended lower 16-bits, and 32-bit zero.
 \end{itemize}
 \subsection{Testing}
-Test vectors will be written to test each possible opcode to see if the above conditions are true.
-To test if the values are correctly written in the first half of the stage, we will write a value to a register and attempt to output the value from the same register. 
+The \texttt{parser} circuit is tested for correctness by using the table in the appendix as a Test Vector in Logism.
+The whole decode stage is correct if programs execute on the entire processor correctly.
+
 \section{Execute Stage}
 This stage executes all of the instructions that we will implement in this project. 
 \subsection{Circuit Diagram}
 \diagram{execute}
-There are two executing subcircuits (\texttt{comp} and \texttt{ALU}) and one logic subcircuit (\texttt{parser}).
-\texttt{Comp} performs comparison operations for \texttt{SLT}, \texttt{SLTU}, \texttt{SLTI}, \texttt{SLTIU}, \texttt{MOVN}, and \texttt{MOVZ}.
+There are two subcircuits (\texttt{comp} and \texttt{ALU}).
+\texttt{Comp} performs comparison operations for \textsc{slt}, \textsc{sltu}, \textsc{slti}, \textsc{sltiu}, \textsc{movn}, and \textsc{movz}.
 \texttt{ALU} performs all of the other arithmetic operations.
-\texttt{parser} parses the \texttt{fcn} input into an opcode for the ALU as well as other control logic that chooses between different outputs.
+
 \subsubsection{Comp}
 \diagram[0.7]{comp}
 This circuit uses an unsigned and signed comparator to perform $A < B$.
-We also use the comparators to perform $A = B$. An \texttt{XOR} gate is used to invert this when \texttt{bit 0} is high.
-\texttt{Bit 0} of \texttt{ctrl} also switches between signed and unsigned.
-\subsubsection{Parser}
-All the bits referenced below refer to bits of \texttt{fcn}.
-\begin{itemize}
-\item \texttt{Bit 0-2} determine the 3 upper bits of the ALU opcode. The lowest bit is always 0.
-\item \texttt{Bit 6} chooses whether or not to replace \texttt{B} with an immediate. We choose an immediate with \texttt{Bit 6} is high.
-  The one exception to this is when we are performing \texttt{MOV} instructions. In this case, we also want to replace \texttt{B} with an immediate (which will always be 0).
-\item If \texttt{Bit 0-3} are all high, then we are performing \texttt{LUI}. Here we replace the output of the \texttt{ALU}
-  with \texttt{imm} shifted left by 16.
-\item Finally, we always want to output \texttt{we} except when \texttt{MOVN} or \texttt{MOVZ} return false.
-\end{itemize}
+We also use the comparators to perform $A = B$. An \texttt{XOR} gate is used to invert this when \texttt{ctrl} is high.
+\texttt{Ctrl} also switches between signed and unsigned comparators.
+
 \subsection{Correctness Constraints}
 \begin{itemize}
-\item \texttt{we} should be on for all instructions except when \texttt{MOVN} or \texttt{MOVZ} return false.
+\item \texttt{we} should be on for all instructions except when \textsc{movn} or \textsc{movz} return false.
 \item Addition, Subtraction, Shifting, Logic operations, Comparison operations should all execute as expected. 
+\item Any instructions not yet implemented, (memory, branch, and jump instructions).
 \end{itemize}
+
 \subsection{Testing}
-We will write text vectors to test all valid inputs to see if the circuit outputs the correct results.
+We wrote a python program to randomly generate Test Vectors for every possible input (including memory, branch, and jump instructions).
+We manually tested edge cases.
+
+\subsection{Hazards}
+\diagram[0.8]{hazard}
+This subcircuit holds all the hazard detection logic.
+Output \texttt{a} and \texttt{b} correspond to whether there is a data hazard for \texttt{A} or \texttt{B} (these are the values read from the register file).
+Output \texttt{ac} and \texttt{bc} are high if there is a MEM hazard on \texttt{A} or \texttt{B} respectively. They are low if there is a EX hazard. 
+
+These outputs are simply fed into muxes that replace the \texttt{A} or \texttt{B} input with values from the EX/MEM stage for EX hazards and from the MEM/WB stage for MEM hazards.
+
+We wrote a series of programs that test all possible hazards to ensure that this logic is correct.
+
 \section{Memory Stage}
-In this project, this stage doesn't do anything. It simply forwards it's inputs to the next stage. 
-\subsection{Circuit Diagram}
-\diagram[0.5]{memory}
+In this project, this stage doesn't do anything. The only reason that we include it here is in preparation for the next project.
+It simply forwards it's inputs to the next stage. 
+
 \section{Write-Back Stage}
 For this project, there is no logic in this stage. It simply pipes \texttt{D}, \texttt{rd}, and \texttt{we} back to the decode subcircuit where it is written to the register file.
-\subsection{Circuit Diagram}
-\diagram[0.7]{writeback}
-This diagram shows more than just the writeback. For this project, the writeback stage simply consists of wires.
-For the next project, we will need to add logic to chose whether to write \texttt{D} or \texttt{M} to the register file.
-\subsection{Pipeline Registers}
+To deal with MEM hazards, we pull down \texttt{rd} into the hazard logic. This is discussed in greater detail in the hazard section.
+
+\section{Pipeline Registers}
 In between each stage, there is a pipeline register. These simply contain a register for each input that are written to on the rising edge of the clock.
 Below is the implementation of the execute-memory pipeline register. All of the others are implemented in a similar fashion.
 \diagram[0.6]{pipeline}
+
 \section{Summary}
 In this document, we presented a design for a limited 5-stage pipelined MIPS processor. Such a design greatly increases the performance of our processor by
 allowing multiple instructions to be executed simultaneously.
+
+\section{Appendix}
+\begin{center}
+  Parser Opcode Table\\
+\begin{tabular}{|lllllllllll|}
+\hline
+\textbf{instr} & \textbf{ctrl{[}7{]}} & \textbf{BorI} & \textbf{op{[}4{]}} & \textbf{stl} & \textbf{lui} & \textbf{mov} & \textbf{var} & \textbf{low} & \textbf{jump} & \textbf{mem} \\ \hline
+addiu & \multicolumn{1}{l|}{1001001} & 1 & 001x & 0 & 0 & 0 & 0 & 1 & 0 & 0 \\
+andi & \multicolumn{1}{l|}{1001100} & 1 & 1000 & 0 & 0 & 0 & 0 & 0 & 0 & 0 \\
+ori & \multicolumn{1}{l|}{1001101} & 1 & 1010 & 0 & 0 & 0 & 0 & 1 & 0 & 0 \\
+xori & \multicolumn{1}{l|}{1001110} & 1 & 1100 & 0 & 0 & 0 & 0 & 0 & 0 & 0 \\
+slti & \multicolumn{1}{l|}{1001010} & 1 & xxxx & 1 & 0 & 0 & 0 & 0 & 0 & 0 \\
+sltiu & \multicolumn{1}{l|}{1001011} & 1 & xxxx & 1 & 0 & 0 & 0 & 1 & 0 & 0 \\
+addu & \multicolumn{1}{l|}{0100001} & 0 & 001x & 0 & 0 & 0 & 0 & 1 & 0 & 0 \\
+subu & \multicolumn{1}{l|}{0100011} & 0 & 011x & 0 & 0 & 0 & 0 & 1 & 0 & 0 \\
+and & \multicolumn{1}{l|}{0100100} & 0 & 1000 & 0 & 0 & 0 & 0 & 0 & 0 & 0 \\
+or & \multicolumn{1}{l|}{0100101} & 0 & 1010 & 0 & 0 & 0 & 0 & 1 & 0 & 0 \\
+xor & \multicolumn{1}{l|}{0100110} & 0 & 1100 & 0 & 0 & 0 & 0 & 0 & 0 & 0 \\
+nor & \multicolumn{1}{l|}{0100111} & 0 & 1110 & 0 & 0 & 0 & 0 & 1 & 0 & 0 \\
+slt & \multicolumn{1}{l|}{0101010} & 0 & xxxx & 1 & 0 & 0 & 0 & 0 & 0 & 0 \\
+sltu & \multicolumn{1}{l|}{0101011} & 0 & xxxx & 1 & 0 & 0 & 0 & 1 & 0 & 0 \\
+movn & \multicolumn{1}{l|}{0001011} & 0 & xxxx & 1 & 0 & 1 & 0 & 1 & 0 & 0 \\
+movz & \multicolumn{1}{l|}{0001010} & 0 & xxxx & 1 & 0 & 1 & 0 & 0 & 0 & 0 \\
+sll & \multicolumn{1}{l|}{0000000} & 0 & 000x & 0 & 0 & 0 & 0 & 0 & 0 & 0 \\
+srl & \multicolumn{1}{l|}{0000010} & 0 & 0100 & 0 & 0 & 0 & 0 & 0 & 0 & 0 \\
+sra & \multicolumn{1}{l|}{0000011} & 0 & 0101 & 0 & 0 & 0 & 0 & 1 & 0 & 0 \\
+sllv & \multicolumn{1}{l|}{0000100} & 0 & 000x & 0 & 0 & 0 & 1 & 0 & 0 & 0 \\
+srlv & \multicolumn{1}{l|}{0000110} & 0 & 0100 & 0 & 0 & 0 & 1 & 0 & 0 & 0 \\
+srav & \multicolumn{1}{l|}{0000111} & 0 & 0101 & 0 & 0 & 0 & 1 & 1 & 0 & 0 \\
+lui & \multicolumn{1}{l|}{1001111} & 1 & xxxx & 0 & 1 & 0 & 0 & 1 & 0 & 0 \\
+j & \multicolumn{1}{l|}{1000010} & 0 & 0000 & 0 & 0 & 0 & 0 & 0 & 1 & 0 \\
+jr & \multicolumn{1}{l|}{0001000} & 0 & 0000 & 0 & 0 & 0 & 0 & 0 & 1 & 0 \\
+jal & \multicolumn{1}{l|}{1000011} & 0 & 0000 & 0 & 0 & 0 & 0 & 1 & 1 & 0 \\
+jalr & \multicolumn{1}{l|}{0001001} & 0 & 0000 & 0 & 0 & 0 & 0 & 1 & 1 & 0 \\
+beq & \multicolumn{1}{l|}{1000100} & 0 & 0000 & 0 & 0 & 0 & 0 & 0 & 1 & 0 \\
+bne & \multicolumn{1}{l|}{1000101} & 0 & 0000 & 0 & 0 & 0 & 0 & 1 & 1 & 0 \\
+blez & \multicolumn{1}{l|}{1000110} & 0 & 0000 & 0 & 0 & 0 & 0 & 0 & 1 & 0 \\
+bgtz & \multicolumn{1}{l|}{1000111} & 0 & 0000 & 0 & 0 & 0 & 0 & 1 & 1 & 0 \\
+bltz & \multicolumn{1}{l|}{1000001} & 0 & 0000 & 0 & 0 & 0 & 0 & 1 & 1 & 0 \\
+bgez & \multicolumn{1}{l|}{1000001} & 0 & 0000 & 0 & 0 & 0 & 0 & 1 & 1 & 0 \\
+lw & \multicolumn{1}{l|}{1100011} & 0 & 0000 & 0 & 0 & 0 & 0 & 1 & 0 & 1 \\
+lb & \multicolumn{1}{l|}{1100000} & 0 & 0000 & 0 & 0 & 0 & 0 & 0 & 0 & 1 \\
+lbu & \multicolumn{1}{l|}{1100100} & 0 & 0000 & 0 & 0 & 0 & 0 & 0 & 0 & 1 \\
+sw & \multicolumn{1}{l|}{1101011} & 0 & 0000 & 0 & 0 & 0 & 0 & 1 & 0 & 1 \\
+sb & \multicolumn{1}{l|}{1101000} & 0 & 0000 & 0 & 0 & 0 & 0 & 0 & 0 & 1 \\ \hline
+\end{tabular}
+\end{center}
 
 \end{document}

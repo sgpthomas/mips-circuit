@@ -1,0 +1,11 @@
+# movn and movz tests
+LUI     $1, 0x7ad2
+ADDIU   $1, $1, 0xb36c # load some big number into r1
+SUBU    $2, $1, $1     # mystery number! is it zero?
+MOVZ    $3, $1, $2
+MOVN    $4, $1, $2
+
+# r1 = 0x7ad1b36c
+# r2 = 0x00000000
+# r3 = 0x7ad1b36c
+# r4 = 0x00000000

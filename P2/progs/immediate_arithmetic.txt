@@ -1,0 +1,18 @@
+# tests for immediate arithmetic + LUI
+ADDIU   $1, $0, 0x8081  # immediate signed extended?
+ADDIU   $1, $1, 0x7f80  # overflow if immediates are sign extended
+LUI     $2, 0xffff
+ANDI    $3, $2, 0xffff  # imm zero extended?
+LUI     $2, 0xf0f0
+ORI     $4, $2, 0xf0f0  # imm zero extended?
+XORI    $5, $2, 0xf000  # imm zero extended?
+SLTI    $6, $2, 0x000f  # signed comparison?
+SLTIU   $7, $2, 0x000f  # unsigned comparison?
+
+# r1 = 0x00000001
+# r2 = 0xf0f00000
+# r3 = 0x00000000
+# r4 = 0xf0f0f0f0
+# r5 = 0xf0f0f000
+# r6 = 0x00000001
+# r7 = 0x00000000
