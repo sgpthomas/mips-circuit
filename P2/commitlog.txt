@@ -1,3 +1,17 @@
+commit f1463a615875721622ba9e9d36bceb76c292f6eb
+Author: Elisha Sword <eds88@cornell.edu>
+Date:   Wed Sep 27 15:41:19 2017 -0400
+
+    Fix decode wiring: use bit 2, not 4
+    
+    This bugfix is consistent with our project documentation. I trust our docs because this change makes the tests work!
+
+commit 1960e3d9adfad486c16b02bf905f0b65b1a5b701
+Author: Elisha Sword <eds88@cornell.edu>
+Date:   Wed Sep 27 12:58:04 2017 -0400
+
+    Commit commitlog
+
 commit 5b05959fed7e79489a4a66f74d2a8ec4abdcedfe
 Author: Elisha Sword <eds88@cornell.edu>
 Date:   Wed Sep 27 12:55:59 2017 -0400
