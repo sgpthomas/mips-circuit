@@ -1,3 +1,15 @@
+commit 5000857d4ac1c56dc8d4f704aac7c1af62c08a8e
+Author: Elisha Sword <eds88@cornell.edu>
+Date:   Wed Sep 27 10:44:29 2017 -0400
+
+    Rename commitlog *.txt
+
+commit 4ed1e240bcb79c1b903bfc96fc2b54dce91d096b
+Author: Elisha Sword <eds88@cornell.edu>
+Date:   Wed Sep 27 10:37:36 2017 -0400
+
+    Update commitlog
+
 commit d38b8afb82caecf22659b586d2afecdb805d4ad4
 Author: Elisha Sword <eds88@cornell.edu>
 Date:   Wed Sep 27 10:35:14 2017 -0400
