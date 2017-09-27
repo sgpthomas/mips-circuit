@@ -1,0 +1,65 @@
+commit d38b8afb82caecf22659b586d2afecdb805d4ad4
+Author: Elisha Sword <eds88@cornell.edu>
+Date:   Wed Sep 27 10:35:14 2017 -0400
+
+    Change power to 1 by default
+
+commit f4ebd7f064c2983bf52d602b5e658f70e6d1bd44
+Author: Sam Thomas <sgpthomas@gmail.com>
+Date:   Tue Sep 26 20:53:53 2017 -0400
+
+    commiting the commitlog
+
+commit be98bfdb8c7e1fe226b9bc5b1acf62dd095d57cb
+Author: Sam Thomas <sgpthomas@gmail.com>
+Date:   Tue Sep 26 20:51:49 2017 -0400
+
+    finished design docs and wrote tests
+
+commit e877d404ad94d7e02f27601a95f6ecd42a03d4cb
+Author: Sam Thomas <sgpthomas@gmail.com>
+Date:   Mon Sep 25 22:41:34 2017 -0400
+
+    finished hazard (i think) which means the circuit is donegit add --all (maybe)
+
+commit 16c019ebd53ccf7e79633ec0349a7fbaf4ddc8dd
+Author: Sam Thomas <sgpthomas@gmail.com>
+Date:   Mon Sep 25 20:34:04 2017 -0400
+
+    fixed tests and fixed issue with one of the pipeline registers
+
+commit 91a571971f4cc7fcf861a43bf120cae944bcc437
+Author: Sam Thomas <sgpthomas@gmail.com>
+Date:   Mon Sep 25 19:26:33 2017 -0400
+
+    moved decode logic into decode, where it should have been all along
+
+commit 0c886287fcd9dbc3d0ea6c2ee692c36294f68440
+Author: Sam Thomas <sgpthomas@gmail.com>
+Date:   Mon Sep 25 10:32:14 2017 -0400
+
+    seperated reset from enable so that we can stall
+
+commit a67d6b06e83e0271856e99e8285da87c7038e290
+Author: Sam Thomas <sgpthomas@gmail.com>
+Date:   Mon Sep 25 09:49:57 2017 -0400
+
+    added support for variable shifting
+
+commit 7bfb75b5109bca725c45da6ac3f79bd947a69db6
+Author: Sam Thomas <sgpthomas@gmail.com>
+Date:   Sun Sep 24 23:18:04 2017 -0400
+
+    moved .gitignore
+
+commit eefb86fdecf1f66e3b7414b31a2ccc5c222d84d9
+Author: Sam Thomas <sgpthomas@gmail.com>
+Date:   Sun Sep 24 23:17:15 2017 -0400
+
+    migrate things over to team-88
+
+commit 67838a18e418fd4e9566e9973fbd8b483ca81a74
+Author: nc352 <nc352@cornell.edu>
+Date:   Fri Sep 15 12:25:41 2017 -0400
+
+    Pushing P2
