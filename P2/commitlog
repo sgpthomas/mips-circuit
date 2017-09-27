@@ -1,3 +1,15 @@
+commit d38b8afb82caecf22659b586d2afecdb805d4ad4
+Author: Elisha Sword <eds88@cornell.edu>
+Date:   Wed Sep 27 10:35:14 2017 -0400
+
+    Change power to 1 by default
+
+commit f4ebd7f064c2983bf52d602b5e658f70e6d1bd44
+Author: Sam Thomas <sgpthomas@gmail.com>
+Date:   Tue Sep 26 20:53:53 2017 -0400
+
+    commiting the commitlog
+
 commit be98bfdb8c7e1fe226b9bc5b1acf62dd095d57cb
 Author: Sam Thomas <sgpthomas@gmail.com>
 Date:   Tue Sep 26 20:51:49 2017 -0400
@@ -8,7 +20,7 @@ commit e877d404ad94d7e02f27601a95f6ecd42a03d4cb
 Author: Sam Thomas <sgpthomas@gmail.com>
 Date:   Mon Sep 25 22:41:34 2017 -0400
 
-    finished hazard (i think) which means the circuit is done (maybe)
+    finished hazard (i think) which means the circuit is donegit add --all (maybe)
 
 commit 16c019ebd53ccf7e79633ec0349a7fbaf4ddc8dd
 Author: Sam Thomas <sgpthomas@gmail.com>
