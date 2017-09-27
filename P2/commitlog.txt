@@ -1,3 +1,23 @@
+commit 5b05959fed7e79489a4a66f74d2a8ec4abdcedfe
+Author: Elisha Sword <eds88@cornell.edu>
+Date:   Wed Sep 27 12:55:59 2017 -0400
+
+    Fix bits 3,4 in decode subcircuit
+    
+    This makes Fibonacci work and should pass make the autograder sanity tests pass.
+
+commit a4eeafa89576d81c3861d327e6fe6c2ff6cdd79b
+Author: Elisha Sword <eds88@cornell.edu>
+Date:   Wed Sep 27 11:16:22 2017 -0400
+
+    Fix accidental wiring error
+
+commit 3c9e735fec6b20caaf7ea7d9c545482e97a04976
+Author: Elisha Sword <eds88@cornell.edu>
+Date:   Wed Sep 27 10:45:04 2017 -0400
+
+    Update commitlog.txt
+
 commit 5000857d4ac1c56dc8d4f704aac7c1af62c08a8e
 Author: Elisha Sword <eds88@cornell.edu>
 Date:   Wed Sep 27 10:44:29 2017 -0400
